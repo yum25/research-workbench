@@ -1,4 +1,3 @@
-import './App.css'
 import ResearchWorkbench from './components/ResearchWorkbench'
 
 function App() {

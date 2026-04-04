@@ -1,47 +1,14 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { C, panel, lbl, btn, inp } from "./ResearchWorkbench.styles";
 
-const C = {
-  bg: "#0f1117", panel: "#161b27", panelBorder: "#2a3045",
-  accent: "#4f8ef7", accentMuted: "#1e3a6e",
-  text: "#e2e8f0", textMuted: "#8896b0", textDim: "#4a5568",
-  danger: "#e05c5c", success: "#3dba7e", warning: "#e0a020",
-  edge: "#4a5568",
-};
-
-const PH = 400;
-
-const panel = (extra = {}) => ({
-  background: C.panel, border: `1px solid ${C.panelBorder}`, borderRadius: 8,
-  padding: "12px", display: "flex", flexDirection: "column",
-  height: PH, boxSizing: "border-box", overflow: "hidden", ...extra,
-});
-
-const lbl = {
-  fontSize: 10, fontFamily: "monospace", letterSpacing: "0.12em",
-  color: C.textMuted, textTransform: "uppercase",
-  marginBottom: 8, borderBottom: `1px solid ${C.panelBorder}`, paddingBottom: 6,
-  flexShrink: 0,
-};
-
-const btn = (v = "default") => ({
-  fontSize: 11, fontFamily: "monospace", padding: "4px 10px", borderRadius: 4, cursor: "pointer",
-  border: `1px solid ${v === "danger" ? C.danger : v === "success" ? C.success : C.panelBorder}`,
-  background: v === "danger" ? "rgba(224,92,92,0.12)" : v === "success" ? "rgba(61,186,126,0.12)" : "rgba(255,255,255,0.04)",
-  color: v === "danger" ? C.danger : v === "success" ? C.success : C.text,
-  whiteSpace: "nowrap", flexShrink: 0,
-});
-
-const inp = (extra = {}) => ({
-  background: "rgba(255,255,255,0.04)", border: `1px solid ${C.panelBorder}`,
-  borderRadius: 4, color: C.text, fontSize: 11, fontFamily: "monospace",
-  padding: "5px 8px", outline: "none", ...extra,
-});
+let idCounter = 1;
+const nextId = (prefix) => `${prefix}_${idCounter++}`;
 
 function ContextLock({ constraints, setConstraints }) {
   const [newLabel, setNewLabel] = useState("");
   const add = () => {
     const label = newLabel.trim() || `Constraint ${constraints.length + 1}`;
-    setConstraints(p => [...p, { id: Date.now(), label, checked: true }]);
+    setConstraints(p => [...p, { id: nextId("constraint"), label, checked: true }]);
     setNewLabel("");
   };
   const deleteLast = () => setConstraints(p => p.slice(0, -1));
@@ -90,13 +57,13 @@ function DialogueBoard({ onAnnotate, constraints }) {
   };
   const annotate = () => {
     if (!sel) return;
-    onAnnotate({ id: Date.now(), source: sel.text, note: "", type: "highlight" });
+    onAnnotate({ id: nextId("annotation"), source: sel.text, note: "", type: "highlight" });
     window.getSelection()?.removeAllRanges();
     setSel(null);
   };
   const simulate = () => {
     const active = constraints.filter(c => c.checked).map(c => c.label).join(", ");
-    setMessages(p => [...p, { id: Date.now(), user: "AI", content: `[Simulated — active constraints: ${active || "none"}]\n\nThis placeholder replaces a real AI response. Connect your model backend to populate real content. Active constraints are injected into the system prompt.` }]);
+    setMessages(p => [...p, { id: nextId("msg"), user: "AI", content: `[Simulated — active constraints: ${active || "none"}]\n\nThis placeholder replaces a real AI response. Connect your model backend to populate real content. Active constraints are injected into the system prompt.` }]);
     setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
   };
   return (
@@ -127,7 +94,7 @@ function Annotations({ annotations, setAnnotations }) {
   const [noteText, setNoteText] = useState("");
   const saveNote = () => {
     if (!noteText.trim()) return;
-    setAnnotations(p => [...p, { id: Date.now(), source: null, note: noteText, type: "note" }]);
+    setAnnotations(p => [...p, { id: nextId("note"), source: null, note: noteText, type: "note" }]);
     setNoteText("");
   };
   const del = id => setAnnotations(p => p.filter(a => a.id !== id));
@@ -242,7 +209,7 @@ function ContextTree() {
   const splitNode = id => {
     const node = nodes.find(n => n.id === id);
     if (!node) return;
-    const nid = `split_${Date.now()}`;
+    const nid = nextId("split");
     setNodes(p => [...p, { id: nid, label: `${node.label}′`, x: node.x + 40, y: node.y + 90 }]);
     setEdges(p => [...p, [id, nid]]);
     setMenu(null);
@@ -250,7 +217,7 @@ function ContextTree() {
 
   const addNode = () => {
     const base = selected ? nodes.find(n => n.id === selected) : null;
-    const nid = `node_${Date.now()}`;
+    const nid = nextId("node");
     setNodes(p => [...p, { id: nid, label: "New", x: (base?.x || 300) + 100, y: (base?.y || 170) + 40 }]);
     if (selected) setEdges(p => [...p, [selected, nid]]);
   };
@@ -286,7 +253,8 @@ function ContextTree() {
     if (!connecting) panRef.current = { mx: e.clientX, my: e.clientY, px: pan.x, py: pan.y };
   };
 
-  const onMove = useCallback(e => {
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+  const onMove = useCallback((e) => {
     const svgPos = svgCoordsFromClient(e.clientX, e.clientY);
     setMousePos(svgPos);
     if (dragging && dragRef.current) {
