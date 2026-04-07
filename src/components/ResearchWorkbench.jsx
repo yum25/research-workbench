@@ -557,7 +557,6 @@ function ComparisonDesk({ suggestions, setSuggestions }) {
 
 // ─── Root ─────────────────────────────────────────────────────────────────────
 const WORKER_URL = "https://research-workbench-worker.marieyu2004.workers.dev";
-const MOCK_MODE = true; // ← flip to false to enable real API calls
 
 export default function ResearchWorkbench() {
   const [constraints, setConstraints] = useState([
@@ -577,6 +576,8 @@ export default function ResearchWorkbench() {
   const [nodeHistories, setNodeHistories] = useState({});
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const [mockMode, setMockMode] = useState(true); // ← flip to false to enable real API calls
 
   // ── Derived values for the active node ──────────────────────────────────────
   const activeNode = nodes.find(n => n.id === activeNodeId) || null;
@@ -628,7 +629,7 @@ export default function ResearchWorkbench() {
     try {
       let assistantContent;
 
-      if (MOCK_MODE) {
+      if (mockMode) {
         // ── Mock mode: no API call, just echo a placeholder ──────────────────
         await new Promise(r => setTimeout(r, 600)); // simulate latency
         assistantContent =
@@ -636,7 +637,7 @@ export default function ResearchWorkbench() {
           `Ancestor context: ${ancestorLabels.length > 0 ? ancestorLabels.join(" → ") : "none"}\n` +
           `Active constraints: ${constraints.filter(c => c.checked).map(c => c.label).join(", ") || "none"}\n\n` +
           `Your message was: "${userPrompt}"\n\n` +
-          `(Set MOCK_MODE = false in the source to enable real API calls.)`;
+          `(Set mockMode = false in the source to enable real API calls.)`;
       } else {
         // ── Real API call via Cloudflare Worker ──────────────────────────────
         const res = await fetch(WORKER_URL, {
@@ -686,11 +687,11 @@ export default function ResearchWorkbench() {
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10, paddingBottom: 8, borderBottom: `1px solid ${C.panelBorder}` }}>
         <span style={{ fontSize: 13, fontFamily: "monospace", letterSpacing: "0.15em", color: C.accent, fontWeight: 700 }}>◈ RESEARCH WORKBENCH</span>
         <span style={{ fontSize: 10, color: C.textDim }}>prototype · v0.1</span>
-        {MOCK_MODE && (
-          <span style={{ fontSize: 10, color: C.warning, fontFamily: "monospace", padding: "2px 8px", background: "rgba(224,160,32,0.1)", borderRadius: 4, border: `1px solid rgba(224,160,32,0.3)` }}>
-            MOCK MODE
-          </span>
-        )}
+        {
+          <button onClick={() => setMockMode(!mockMode)} style={{ fontSize: 10, color: C.warning, fontFamily: "monospace", padding: "2px 8px", background: mockMode ? "rgba(224,160,32,0.1)" : "rgba(38, 224, 32, 0.1)", borderRadius: 4, border: `1px solid rgba(224,160,32,0.3)` }}>
+            {mockMode ? "MOCK MODE" : "REAL MODE"}
+          </button>
+        }
         <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
           {[["U1", C.accent, C.accentMuted], ["U2", C.success, "rgba(61,186,126,0.2)"], ["U3", C.warning, "rgba(224,160,32,0.2)"]].map(([u, col, bg]) => (
             <div key={u} style={{ width: 26, height: 26, borderRadius: "50%", background: bg, border: `1px solid ${col}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: col }}>{u}</div>
