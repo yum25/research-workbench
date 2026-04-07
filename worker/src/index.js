@@ -31,7 +31,7 @@ export default {
 		return new Response(JSON.stringify(data), {
 			headers: {
 				'Content-Type': 'application/json',
-				'Access-Control-Allow-Origin': 'https://research-workbench.marieyu2004.workers.dev/', // tighten this in production
+				'Access-Control-Allow-Origin': '*', // tighten this in production
 			},
 		});
 	},
