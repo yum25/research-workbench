@@ -10,6 +10,17 @@
 
 export default {
 	async fetch(request, env) {
+		// Handle preflight requests
+		if (request.method === "OPTIONS") {
+		return new Response(null, {
+			headers: {
+				"Access-Control-Allow-Headers": "Content-Type",
+				'Access-Control-Allow-Origin': '*', // tighten this in production
+			},
+			status: 204, // No Content is standard for preflight
+		});
+		}
+
 		if (request.method !== 'POST') return new Response('Method not allowed', { status: 405 });
 
 		const { messages } = await request.json();
