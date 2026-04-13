@@ -89,7 +89,7 @@ function ContextLock({ constraints, setConstraints }) {
   const edit = (id, v) => setConstraints(p => p.map(c => c.id === id ? { ...c, label: v } : c));
   return (
     <div style={panel()}>
-      <div style={lbl}>Context Lock · Pinned Constraints</div>
+      <div style={lbl}>Pinned Constraints</div>
       <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 6 }}>
         {constraints.map(c => (
           <div key={c.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -314,8 +314,6 @@ const INIT_NODES = [
   { id: "idea", label: "Idea", x: 100, y: 170 },
 ];
 const INIT_EDGES = [
-  ["idea","p1"],["idea","p2"],["p1","t1a"],["p1","p3"],
-  ["p2","p3"],["p2","p4"],["t1a","end"],["p3","end"],["p4","end"],
 ];
 
 function ContextTree({ nodes, edges, setNodes, setEdges, activeNodeId, onNodeSelect, nodeHistories }) {
@@ -399,7 +397,7 @@ function ContextTree({ nodes, edges, setNodes, setEdges, activeNodeId, onNodeSel
   return (
     <div style={panel({ position: "relative" })}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, marginBottom: 6, borderBottom: `1px solid ${C.panelBorder}`, paddingBottom: 6 }}>
-        <span style={{ fontSize: 10, fontFamily: "monospace", letterSpacing: "0.12em", color: C.textMuted, textTransform: "uppercase" }}>Context Tree · Directed Graph</span>
+        <span style={{ fontSize: 10, fontFamily: "monospace", letterSpacing: "0.12em", color: C.textMuted, textTransform: "uppercase" }}>Idea Map · Directed Graph</span>
         <button style={{ ...btn("success"), fontSize: 10, marginLeft: "auto" }} onClick={addNode}>＋ Node</button>
         {connecting && <button style={{ ...btn("danger"), fontSize: 10 }} onClick={() => setConnecting(null)}>✕ Cancel</button>}
         <span style={{ fontSize: 10, color: C.textDim, fontFamily: "monospace" }}>click=select · drag=move · right-click=menu</span>
@@ -451,7 +449,7 @@ function ContextTree({ nodes, edges, setNodes, setEdges, activeNodeId, onNodeSel
             const isSource = connecting === node.id;
             const msgCount = (nodeHistories[node.id]?.displayMessages || []).length;
             const strokeCol = isSource ? C.warning : isSel ? C.accent : isHov ? C.accent : "#2a3a5e";
-            const fillCol   = isSource ? "rgba(224,160,32,0.18)" : isSel ? C.accentMuted : isHov ? "#1a2840" : "#0e1520";
+            const fillCol = isSource ? "rgba(224,160,32,0.18)" : isSel ? C.accentMuted : isHov ? "#1a2840" : "#0e1520";
             return (
               <g key={node.id} transform={`translate(${node.x},${node.y})`}
                 onMouseEnter={() => setHovered(node.id)} onMouseLeave={() => setHovered(null)}
@@ -520,7 +518,7 @@ function ComparisonDesk({ suggestions, setSuggestions }) {
   const del = id => setSuggestions(p => p.filter(s => s.id !== id));
   const copy = id => {
     const s = suggestions.find(x => x.id === id);
-    if (s) navigator.clipboard.writeText(s.bullets.join("\n")).catch(() => {});
+    if (s) navigator.clipboard.writeText(s.bullets.join("\n")).catch(() => { });
     setStatus(p => ({ ...p, [id]: "copied" }));
     setTimeout(() => setStatus(p => { const n = { ...p }; delete n[id]; return n; }), 1500);
   };
@@ -590,7 +588,7 @@ export default function ResearchWorkbench() {
     if (!activeNodeId) return;
 
     const userDisplayMsg = { id: Date.now(), role: "user", content: userPrompt };
-    const userApiMsg     = { role: "user", content: userPrompt };
+    const userApiMsg = { role: "user", content: userPrompt };
 
     // Append user message to this node's display + api history immediately
     setNodeHistories(prev => {
@@ -599,7 +597,7 @@ export default function ResearchWorkbench() {
         ...prev,
         [activeNodeId]: {
           displayMessages: [...existing.displayMessages, userDisplayMsg],
-          apiHistory:      [...existing.apiHistory, userApiMsg],
+          apiHistory: [...existing.apiHistory, userApiMsg],
         },
       };
     });
@@ -608,12 +606,12 @@ export default function ResearchWorkbench() {
 
     // Build the full messages array for the API:
     // [system] + ancestor api histories (oldest first) + this node's history + new user msg
-    const systemPrompt  = buildSystemPrompt(constraints, ancestorLabels);
+    const systemPrompt = buildSystemPrompt(constraints, ancestorLabels);
     const ancestorHistory = buildAncestorApiHistory(ancestorIds, nodeHistories);
     const thisNodeHistory = (nodeHistories[activeNodeId]?.apiHistory || []);
 
     const messagesForApi = [
-      { role: "system",  content: systemPrompt },
+      { role: "system", content: systemPrompt },
       ...ancestorHistory,
       ...thisNodeHistory,
       userApiMsg,
@@ -664,7 +662,7 @@ export default function ResearchWorkbench() {
           ...prev,
           [activeNodeId]: {
             displayMessages: [...existing.displayMessages, assistantDisplayMsg],
-            apiHistory:      [...existing.apiHistory, assistantApiMsg],
+            apiHistory: [...existing.apiHistory, assistantApiMsg],
           },
         };
       });
